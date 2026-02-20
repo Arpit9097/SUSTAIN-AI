@@ -1,7 +1,7 @@
 import { useState, useContext } from "react";
 import { SustainabilityContext } from "../context/SustainabilityContext";
 import { calculateScore } from "../utils/calculateScore";
-import "./InputPage.css";
+import "./inputPage.css";
 
 function InputPage() {
 
