@@ -1,8 +1,10 @@
 import { useState, useContext } from "react";
 import { SustainabilityContext } from "../context/SustainabilityContext";
 import { calculateScore } from "../utils/calculateScore";
+import "./InputPage.css";
 
 function InputPage() {
+
   const { setScores } = useContext(SustainabilityContext);
 
   const [formData, setFormData] = useState({
@@ -14,76 +16,144 @@ function InputPage() {
   });
 
   const handleSubmit = (e) => {
+
     e.preventDefault();
+
     const result = calculateScore(formData);
+
     setScores(result);
+
     alert("Scores Updated!");
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <h2>Daily Input</h2>
 
-      <label>Travel Mode:</label>
-      <select
-        onChange={(e) =>
-          setFormData({ ...formData, travel: e.target.value })
-        }
+    <div className="inputContainer">
+
+      <form
+        className="inputForm"
+        onSubmit={handleSubmit}
       >
-        <option value="car">Car</option>
-        <option value="metro">Metro</option>
-        <option value="walk">Walk</option>
-      </select>
 
-      <br /><br />
+        <h1>Daily Sustainability Input</h1>
+      
+        {/* Travel */}
 
-      <label>Electricity Units:</label>
-      <input
-        type="number"
-        onChange={(e) =>
-          setFormData({ ...formData, electricity: Number(e.target.value) })
-        }
-      />
+        <div className="formGroup">
 
-      <br /><br />
+          <label>Travel Mode</label>
 
-      <label>Water Usage:</label>
-      <input
-        type="number"
-        onChange={(e) =>
-          setFormData({ ...formData, water: Number(e.target.value) })
-        }
-      />
+          <select
+            onChange={(e)=>
+              setFormData({
+                ...formData,
+                travel:e.target.value
+              })
+            }
+          >
+            <option value="car">Car</option>
+            <option value="metro">Metro</option>
+            <option value="walk">Walk</option>
+          </select>
 
-      <br /><br />
+        </div>
 
-      <label>Waste Type:</label>
-      <select
-        onChange={(e) =>
-          setFormData({ ...formData, waste: e.target.value })
-        }
-      >
-        <option value="plastic">Plastic</option>
-        <option value="organic">Organic</option>
-      </select>
 
-      <br /><br />
+        {/* Electricity */}
 
-      <label>Food Type:</label>
-      <select
-        onChange={(e) =>
-          setFormData({ ...formData, food: e.target.value })
-        }
-      >
-        <option value="veg">Veg</option>
-        <option value="nonveg">Non-Veg</option>
-      </select>
+        <div className="formGroup">
 
-      <br /><br />
+          <label>Electricity Units</label>
 
-      <button type="submit">Calculate</button>
-    </form>
+          <input
+            type="number"
+
+            onChange={(e)=>
+              setFormData({
+                ...formData,
+                electricity:Number(e.target.value)
+              })
+            }
+          />
+
+        </div>
+
+
+        {/* Water */}
+
+        <div className="formGroup">
+
+          <label>Water Usage</label>
+
+          <input
+            type="number"
+
+            onChange={(e)=>
+              setFormData({
+                ...formData,
+                water:Number(e.target.value)
+              })
+            }
+          />
+
+        </div>
+
+
+        {/* Waste */}
+
+        <div className="formGroup">
+
+          <label>Waste Type</label>
+
+          <select
+
+            onChange={(e)=>
+              setFormData({
+                ...formData,
+                waste:e.target.value
+              })
+            }
+          >
+            <option value="plastic">Plastic</option>
+            <option value="organic">Organic</option>
+          </select>
+
+        </div>
+
+
+        {/* Food */}
+
+        <div className="formGroup">
+
+          <label>Food Type</label>
+
+          <select
+            onChange={(e)=>
+              setFormData({
+                ...formData,
+                food:e.target.value
+              })
+            }
+          >
+            <option value="veg">Veg</option>
+            <option value="nonveg">Non-Veg</option>
+          </select>
+
+        </div>
+
+
+        <button type="submit">
+
+          Calculate Sustainability Score
+
+        </button>
+
+      </form>
+
+    </div>
+
   );
+
 }
 
 export default InputPage;

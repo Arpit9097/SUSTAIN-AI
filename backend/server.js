@@ -1,14 +1,20 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
+import User from "./models/User.js";
+import { authenticateUser } from "./middleware/authMiddleware.js";
+import connectDB from "./config/db.js";
 
 dotenv.config();
 
+connectDB();
+
 const app = express();
+
 app.use(cors());
 app.use(express.json());
 
-const PORT = 5000;
+const PORT = process.env.PORT || 5000;
 const API_KEY = process.env.GEMINI_API_KEY;
 
 if (!API_KEY) {
@@ -16,12 +22,103 @@ if (!API_KEY) {
   process.exit(1);
 }
 
-app.post("/chat", async (req, res) => {
+app.post("/api/users/check-username", async (req, res) => {
   try {
+    const { username } = req.body;
+
+    if (!username) {
+      return res.status(400).json({ error: "Username required" });
+    }
+
+    const user = await User.findOne({ username });
+
+    res.json({ exists: !!user });
+
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.post("/api/users/get-email", async (req, res) => {
+  try {
+
+    const { username } = req.body;
+
+    if (!username) {
+      return res.status(400).json({ error: "Username required" });
+    }
+
+    const user = await User.findOne({ username });
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    res.json({ email: user.email });
+
+  } catch (error) {
+
+    res.status(500).json({ error: error.message });
+
+  }
+});
+
+app.post("/api/users", async (req, res) => {
+
+  try {
+
+    const { username, email, firebaseUid } = req.body;
+
+    if (!username || !email || !firebaseUid) {
+      return res.status(400).json({
+        error: "username, email and firebaseUid required"
+      });
+    }
+
+    const existingUser = await User.findOne({
+      $or: [
+        { email },
+        { username },
+        { firebaseUid }
+      ]
+    });
+
+    if (existingUser) {
+      return res.status(400).json({
+        error: "User already exists"
+      });
+    }
+
+    const newUser = new User({
+      username,
+      email,
+      firebaseUid
+    });
+
+    await newUser.save();
+
+    res.status(201).json(newUser);
+
+  } catch (error) {
+
+    res.status(500).json({
+      error: error.message
+    });
+
+  }
+
+});
+
+app.post("/chat", authenticateUser, async (req, res) => {
+
+  try {
+
     const { message, scores } = req.body;
 
     if (!message) {
-      return res.status(400).json({ reply: "Message required" });
+      return res.status(400).json({
+        reply: "Message required"
+      });
     }
 
     const prompt = `
@@ -50,7 +147,9 @@ Give concise sustainability advice.
         body: JSON.stringify({
           contents: [
             {
-              parts: [{ text: prompt }]
+              parts: [
+                { text: prompt }
+              ]
             }
           ]
         })
@@ -66,13 +165,18 @@ Give concise sustainability advice.
     res.json({ reply });
 
   } catch (error) {
+
     res.status(500).json({
       reply: "Server Error",
       error: error.message
     });
+
   }
+
 });
 
 app.listen(PORT, () => {
-  console.log("Server running on port 5000");
+
+  console.log(`Server running on port ${PORT}`);
+
 });
