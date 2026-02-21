@@ -10,6 +10,10 @@ const serviceAccountPath = new URL('./serviceAccountKey.json', import.meta.url);
 
 let isInitialized = false;
 
+// Export so authMiddleware can check before attempting full verification
+export const isFirebaseAdminReady = () => isInitialized;
+
+
 async function initFirebaseAdmin() {
     try {
         const serviceAccount = JSON.parse(

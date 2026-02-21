@@ -175,6 +175,12 @@ Give concise sustainability advice.
 
 });
 
+// Secure logout endpoint — verifies token before confirming logout
+app.post("/api/logout", authenticateUser, (req, res) => {
+  // Token is valid (authenticateUser passed), safe to logout
+  return res.status(200).json({ message: "Logged out successfully" });
+});
+
 app.listen(PORT, () => {
 
   console.log(`Server running on port ${PORT}`);

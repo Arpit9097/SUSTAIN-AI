@@ -1,9 +1,11 @@
 import { useState, useContext } from "react";
 import { SustainabilityContext } from "../context/SustainabilityContext";
+import { useAuth } from "../context/AuthContext";
 import "./Assistant.css";
 
 function Assistant() {
   const { scores } = useContext(SustainabilityContext);
+  const { currentUser } = useAuth();
 
   const [messages, setMessages] = useState([
     { sender: "ai", text: "Hello! Ask me about your sustainability performance." },
@@ -16,17 +18,19 @@ function Assistant() {
     if (!input.trim()) return;
 
     const userMessage = { sender: "user", text: input };
-
-    // Show user message immediately
     setMessages((prev) => [...prev, userMessage]);
     setInput("");
     setLoading(true);
 
     try {
+      // Get Firebase ID token for authenticated request
+      const token = await currentUser.getIdToken();
+
       const response = await fetch("http://localhost:5000/chat", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           message: userMessage.text,
@@ -36,14 +40,11 @@ function Assistant() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.errorDetails || `Server error: ${response.status}`);
+        throw new Error(errorData.reply || `Server error: ${response.status}`);
       }
 
       const data = await response.json();
-
-      const aiMessage = { sender: "ai", text: data.reply };
-
-      setMessages((prev) => [...prev, aiMessage]);
+      setMessages((prev) => [...prev, { sender: "ai", text: data.reply }]);
     } catch (error) {
       console.error("Chat error:", error);
       setMessages((prev) => [
@@ -66,8 +67,7 @@ function Assistant() {
             {msg.text}
           </div>
         ))}
-
-        {loading && <div className="aiMsg">Thinking...</div>}
+        {loading && <div className="aiMsg">Thinking... 🌱</div>}
       </div>
 
       <div className="inputArea">
@@ -77,9 +77,11 @@ function Assistant() {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           disabled={loading}
-          onKeyPress={(e) => e.key === 'Enter' && !loading && handleSend()}
+          onKeyPress={(e) => e.key === "Enter" && !loading && handleSend()}
         />
-        <button onClick={handleSend} disabled={loading}>{loading ? "..." : "Send"}</button>
+        <button onClick={handleSend} disabled={loading}>
+          {loading ? "..." : "Send"}
+        </button>
       </div>
     </div>
   );

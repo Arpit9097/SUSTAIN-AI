@@ -15,16 +15,54 @@ function InputPage() {
     food: "veg",
   });
 
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
+
+  // ✅ single handler (clean code)
+  const handleChange = (e) => {
+
+    const { name, value, type } = e.target;
+
+    setFormData((prev) => ({
+      ...prev,
+      [name]:
+        type === "number" ? Number(value) : value,
+    }));
+
+  };
+
+
   const handleSubmit = (e) => {
 
     e.preventDefault();
 
-    const result = calculateScore(formData);
+    // ✅ Basic validation
+    if (
+      formData.electricity < 0 ||
+      formData.water < 0
+    ) {
+      setMessage("Values cannot be negative.");
+      return;
+    }
 
-    setScores(result);
+    setLoading(true);
 
-    alert("Scores Updated!");
+    setTimeout(() => {
+
+      const result = calculateScore(formData);
+
+      setScores(result);
+
+      setMessage(
+        " Sustainability score updated successfully!"
+      );
+
+      setLoading(false);
+
+    }, 600); // smooth UX
+
   };
+
 
   return (
 
@@ -36,7 +74,7 @@ function InputPage() {
       >
 
         <h1>Daily Sustainability Input</h1>
-      
+
         {/* Travel */}
 
         <div className="formGroup">
@@ -44,12 +82,9 @@ function InputPage() {
           <label>Travel Mode</label>
 
           <select
-            onChange={(e)=>
-              setFormData({
-                ...formData,
-                travel:e.target.value
-              })
-            }
+            name="travel"
+            value={formData.travel}
+            onChange={handleChange}
           >
             <option value="car">Car</option>
             <option value="metro">Metro</option>
@@ -63,17 +98,15 @@ function InputPage() {
 
         <div className="formGroup">
 
-          <label>Electricity Units</label>
+          <label>Electricity Units (kWh)</label>
 
           <input
             type="number"
-
-            onChange={(e)=>
-              setFormData({
-                ...formData,
-                electricity:Number(e.target.value)
-              })
-            }
+            name="electricity"
+            min="0"
+            value={formData.electricity}
+            onChange={handleChange}
+            required
           />
 
         </div>
@@ -83,17 +116,15 @@ function InputPage() {
 
         <div className="formGroup">
 
-          <label>Water Usage</label>
+          <label>Water Usage (Litres)</label>
 
           <input
             type="number"
-
-            onChange={(e)=>
-              setFormData({
-                ...formData,
-                water:Number(e.target.value)
-              })
-            }
+            name="water"
+            min="0"
+            value={formData.water}
+            onChange={handleChange}
+            required
           />
 
         </div>
@@ -106,13 +137,9 @@ function InputPage() {
           <label>Waste Type</label>
 
           <select
-
-            onChange={(e)=>
-              setFormData({
-                ...formData,
-                waste:e.target.value
-              })
-            }
+            name="waste"
+            value={formData.waste}
+            onChange={handleChange}
           >
             <option value="plastic">Plastic</option>
             <option value="organic">Organic</option>
@@ -128,12 +155,9 @@ function InputPage() {
           <label>Food Type</label>
 
           <select
-            onChange={(e)=>
-              setFormData({
-                ...formData,
-                food:e.target.value
-              })
-            }
+            name="food"
+            value={formData.food}
+            onChange={handleChange}
           >
             <option value="veg">Veg</option>
             <option value="nonveg">Non-Veg</option>
@@ -142,11 +166,24 @@ function InputPage() {
         </div>
 
 
-        <button type="submit">
+        <button
+          type="submit"
+          disabled={loading}
+        >
 
-          Calculate Sustainability Score
+          {loading
+            ? "Calculating..."
+                       : "Calculate Sustainability Score"}
 
         </button>
+
+        {message && (
+          <p className="message">
+
+            {message}
+
+          </p>
+        )}
 
       </form>
 
